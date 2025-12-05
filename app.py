@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import base64
-import textwrap
 from io import BytesIO
 
 # --- IMPORTS ---
@@ -18,32 +17,80 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- FUNÇÃO DE LIMPEZA (A SOLUÇÃO DO PROBLEMA) ---
-def clean_html(html_string):
-    """Remove espaços extras para o Streamlit não achar que é código."""
-    return textwrap.dedent(html_string).strip()
+# --- FUNÇÕES DE LAYOUT (BLINDADAS CONTRA ERRO DE INDENTAÇÃO) ---
+def render_details_html(plant):
+    # Usamos concatenação (...) para evitar qualquer erro de identação do Python
+    html = (
+        f'<div class="detail-card">'
+        f'<h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>'
+        f'<h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>'
+        
+        f'<div style="background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;">'
+        f'{plant.descricao}'
+        f'</div>'
+        
+        f'<h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>'
+        f'<p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>'
+        
+        f'<div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">'
+        f'<h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>'
+        f'<p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>'
+        f'</div>'
+
+        f'<hr style="margin: 30px 0; border-top: 1px solid #ddd;">'
+        
+        f'<h3 style="color: #8B0000 !important; margin-bottom: 20px;">⚠️ Perfil de Segurança</h3>'
+        
+        f'<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">'
+        f'<div>'
+        f'<strong>Efeitos Adversos:</strong>'
+        f'<p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>'
+        f'</div>'
+        f'<div>'
+        f'<strong>Contraindicações:</strong>'
+        f'<p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>'
+        f'</div>'
+        f'</div>'
+        
+        f'<div style="margin-top: 20px;">'
+        f'<strong>Interações:</strong>'
+        f'<p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>'
+        f'</div>'
+        f'</div>'
+    )
+    return html
+
+def render_card_html(plant, img_html, bg_badge, color_badge):
+    html = (
+        f'<div class="plant-card-v2 animate-enter">'
+        f'<div class="card-img-wrapper">{img_html}</div>'
+        f'<div class="card-body">'
+        f'<div class="card-title-v2">{plant.nome}</div>'
+        f'<span class="card-scientific">{plant.nome_cientifico}</span>'
+        f'<span class="badge-pill" style="background-color: {bg_badge}; color: {color_badge};">'
+        f'{plant.nivel_evidencia}'
+        f'</span>'
+        f'</div>'
+        f'</div>'
+    )
+    return html
 
 # --- CACHING DE IMAGENS ---
 @st.cache_data
 def get_img_as_base64(file_path):
-    """Lê uma imagem do disco e converte para base64."""
-    if not os.path.exists(file_path):
-        return None
+    if not os.path.exists(file_path): return None
     try:
         with open(file_path, "rb") as f:
             data = f.read()
         return base64.b64encode(data).decode()
-    except Exception:
-        return None
+    except Exception: return None
 
 # --- BACKGROUND PROCESSADO ---
 @st.cache_data
 def get_processed_background():
     possible_files = ["fundo.png", "Gemini_Generated_Image_ynyy07ynyy07ynyy.png"]
     img_path = next((f for f in possible_files if os.path.exists(f)), None)
-    
-    if not img_path or Image is None:
-        return None
+    if not img_path or Image is None: return None
     try:
         img = Image.open(img_path).convert("RGBA")
         enhancer = ImageEnhance.Brightness(img)
@@ -52,8 +99,7 @@ def get_processed_background():
         img = img.convert('RGB')
         img.save(buffered, format="JPEG", quality=70)
         return base64.b64encode(buffered.getvalue()).decode()
-    except Exception:
-        return None
+    except Exception: return None
 
 bg_b64 = get_processed_background()
 
@@ -76,109 +122,32 @@ css_background = f"""
     }}
 """ if bg_b64 else """ .stApp { background-color: #F7F5EB; } """
 
-# Usamos clean_html aqui também para evitar bugs no CSS
-st.markdown(clean_html(f"""
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap');
-
     {css_background}
-    
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
-    
-    /* Header Overlay */
-    .header-overlay {{
-        background-color: rgba(255, 255, 255, 0.95);
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        backdrop-filter: blur(5px);
-        margin-bottom: 30px;
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.5);
-    }}
-
-    /* Tipografia */
-    h1 {{ 
-        font-family: 'Cinzel', serif !important; 
-        color: #1a472a !important; 
-        font-size: 3.5rem !important; 
-        margin-bottom: 5px !important; 
-        text-shadow: none !important; 
-    }}
+    .header-overlay {{ background-color: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); backdrop-filter: blur(5px); margin-bottom: 30px; text-align: center; border: 1px solid rgba(255,255,255,0.5); }}
+    h1 {{ font-family: 'Cinzel', serif !important; color: #1a472a !important; font-size: 3.5rem !important; margin-bottom: 5px !important; text-shadow: none !important; }}
     h2, h3 {{ font-family: 'Cinzel', serif !important; color: #2d5a3f !important; }}
     p, li, span, div, a {{ font-family: 'Fauna One', serif; color: #2c3e50; }}
-
-    /* Sidebar */
     section[data-testid="stSidebar"] {{ background-color: rgba(255, 253, 245, 0.96); border-right: 1px solid #dcdcdc; }}
     .sidebar-logo {{ display: block; margin: 0 auto 20px auto; width: 90%; transition: transform 0.2s; }}
     .sidebar-logo:hover {{ transform: scale(1.05); cursor: pointer; }}
-
-    /* Cards */
     .plant-card-v2 {{ background-color: rgba(255, 255, 255, 0.95); border: 1px solid #dcdcdc; border-radius: 8px 25px 8px 25px; padding: 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s ease; height: 100%; overflow: hidden; }}
     .plant-card-v2:hover {{ transform: translateY(-5px); box-shadow: 0 8px 20px rgba(27, 77, 62, 0.2); border-color: #4CAF50; }}
     .card-img-wrapper {{ height: 180px; overflow: hidden; border-bottom: 3px solid #1a472a; background-color: #f4f4f4; }}
     .card-img-v2 {{ width: 100%; height: 100%; object-fit: cover; }}
     .card-body {{ padding: 15px; text-align: center; }}
-    
-    /* Badges */
-    .badge-pill {{ 
-        display: inline-block; 
-        padding: 6px 14px; 
-        border-radius: 50px; 
-        font-size: 0.75rem; 
-        font-weight: bold; 
-        text-transform: uppercase; 
-        letter-spacing: 1px; 
-        color: #FFFFFF !important; 
-        background-color: #2e7d32 !important; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-    }}
-
-    /* Botões */
-    div.stButton > button {{ 
-        background-color: #1a472a !important; 
-        color: #FFFFFF !important; 
-        border-radius: 30px; 
-        border: 2px solid #1a472a; 
-        padding: 8px 20px; 
-        font-family: 'Cinzel', serif; 
-        font-weight: bold;
-        transition: all 0.2s; 
-        width: 100%; 
-    }}
-    div.stButton > button:hover {{ 
-        background-color: #2d5a3f !important; 
-        color: #FFFFFF !important; 
-        border-color: #2d5a3f; 
-        transform: scale(1.02);
-    }}
+    .badge-pill {{ display: inline-block; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF !important; background-color: #2e7d32 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }}
+    div.stButton > button {{ background-color: #1a472a !important; color: #FFFFFF !important; border-radius: 30px; border: 2px solid #1a472a; padding: 8px 20px; font-family: 'Cinzel', serif; font-weight: bold; transition: all 0.2s; width: 100%; }}
+    div.stButton > button:hover {{ background-color: #2d5a3f !important; color: #FFFFFF !important; border-color: #2d5a3f; transform: scale(1.02); }}
     div.stButton > button p {{ color: #FFFFFF !important; }}
-
-    /* Detalhes Translucidos */
-    .detail-card {{
-        background-color: rgba(255, 255, 255, 0.95); 
-        padding: 40px;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        margin-bottom: 20px;
-        height: 100%;
-        color: #2c3e50;
-    }}
-
-    .taped-photo {{ 
-        background: white; 
-        padding: 10px 10px 40px 10px; 
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.2); 
-        transform: rotate(-1.5deg); 
-        margin-bottom: 20px; 
-        border: 1px solid #ddd;
-    }}
-    
+    .detail-card {{ background-color: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.5); margin-bottom: 20px; height: 100%; color: #2c3e50; }}
+    .taped-photo {{ background: white; padding: 10px 10px 40px 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); transform: rotate(-1.5deg); margin-bottom: 20px; border: 1px solid #ddd; }}
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}}
     </style>
-"""), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- CLASSE DE DADOS ---
 class Planta:
@@ -231,50 +200,50 @@ with st.sidebar:
         st.markdown("## FitoPerform")
 
     with st.expander("👨‍⚕️ Fale com o Farmacêutico", expanded=False):
-        st.markdown(clean_html("""
-        <div style="background-color: #fff; border-left: 4px solid #1B4D3E; padding: 15px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: 10px; font-size: 0.9em;">
-            <strong style="color: #1a472a; font-size: 1.1em;">Thiago Abranches</strong><br>
-            <em style="color: #666;">Farmacêutico Clínico</em><br>
-            <hr style="margin: 5px 0;">
-            <strong>CRF-SP:</strong> 091811<br>
-            <strong>CRF-RJ:</strong> 25368<br>
-            <br>
-            📞 (11) 94146-9952<br>
-            ✉️ thiagoabranches.farma@gmail.com
-        </div>
-        """), unsafe_allow_html=True)
+        st.markdown("""
+<div style="background-color: #fff; border-left: 4px solid #1B4D3E; padding: 15px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: 10px; font-size: 0.9em;">
+<strong style="color: #1a472a; font-size: 1.1em;">Thiago Abranches</strong><br>
+<em style="color: #666;">Farmacêutico Clínico</em><br>
+<hr style="margin: 5px 0;">
+<strong>CRF-SP:</strong> 091811<br>
+<strong>CRF-RJ:</strong> 25368<br>
+<br>
+📞 (11) 94146-9952<br>
+✉️ thiagoabranches.farma@gmail.com
+</div>
+""", unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### Autores do Livro")
-    st.markdown(clean_html("""
-    <div style="font-size: 0.9em; line-height: 1.6;">
-    • <b>Thiago Abranches</b> (MSc. UFRJ)<br>
-    • <b>Marina Ramos de Azevedo</b> (DSc. IFRJ)<br>
-    • <b>Prof. Dr. Leopoldo C. Baratto</b> (DSc. UFRJ)
-    </div>
-    """), unsafe_allow_html=True)
+    st.markdown("""
+<div style="font-size: 0.9em; line-height: 1.6;">
+• <b>Thiago Abranches</b> (MSc. UFRJ)<br>
+• <b>Marina Ramos de Azevedo</b> (DSc. IFRJ)<br>
+• <b>Prof. Dr. Leopoldo C. Baratto</b> (DSc. UFRJ)
+</div>
+""", unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("**Desenvolvedor da versão aplicativo:** Thiago Abranches")
     st.markdown("---")
     st.error("⚠️ **Uso profissional**\n\nEste aplicativo é destinado a profissionais prescritores habilitados, seu uso não substitui a avaliação clinica do profissional.")
-    st.markdown(clean_html("""
-        <a href="https://www.plantaciencia.com/_files/ugd/aedcbc_09803571856343ea82fed6ba99b0b7f2.pdf" target="_blank" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%); color: #FFFFFF !important; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-top: 10px; margin-bottom: 20px;">
-            📥 Baixar Livro (PDF)
-        </a>
-    """), unsafe_allow_html=True)
+    st.markdown("""
+<a href="https://www.plantaciencia.com/_files/ugd/aedcbc_09803571856343ea82fed6ba99b0b7f2.pdf" target="_blank" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%); color: #FFFFFF !important; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-top: 10px; margin-bottom: 20px;">
+📥 Baixar Livro (PDF)
+</a>
+""", unsafe_allow_html=True)
     st.caption("Copyright © 2025 Thiago Abranches.\nTodos os direitos reservados.")
 
 # --- HOME VIEW ---
 if st.session_state['view'] == 'home':
-    st.markdown(clean_html("""
-    <div class="header-overlay animate-enter">
-        <h1 style="color: #1a472a; font-size: 4rem;">HERBARIO DIGITAL</h1>
-        <p style="font-size: 1.2rem; color: #1a472a; font-style: italic; margin-top: -10px;">
-            Guia de Plantas Medicinais e Desempenho Físico
-        </p>
-        <div style="width: 100px; height: 3px; background: #1a472a; margin: 20px auto;"></div>
-    </div>
-    """), unsafe_allow_html=True)
+    st.markdown("""
+<div class="header-overlay animate-enter">
+<h1 style="color: #1a472a; font-size: 4rem;">HERBARIO DIGITAL</h1>
+<p style="font-size: 1.2rem; color: #1a472a; font-style: italic; margin-top: -10px;">
+Guia de Plantas Medicinais e Desempenho Físico
+</p>
+<div style="width: 100px; height: 3px; background: #1a472a; margin: 20px auto;"></div>
+</div>
+""", unsafe_allow_html=True)
 
     col_search, col_filter = st.columns([3, 1])
     with col_search:
@@ -294,20 +263,8 @@ if st.session_state['view'] == 'home':
             img_b64 = get_img_as_base64(img_path)
             img_html = f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img-v2">' if img_b64 else '<div style="height:100%; background:#f0f4f1; display:flex; align-items:center; justify-content:center; color:#8ba896;">🌿</div>'
             
-            # Usamos clean_html() para remover indentação e evitar bug de formatação
-            card_html = clean_html(f"""
-            <div class="plant-card-v2 animate-enter" style="animation-delay: {idx * 0.03}s">
-                <div class="card-img-wrapper">{img_html}</div>
-                <div class="card-body">
-                    <div class="card-title-v2">{plant.nome}</div>
-                    <span class="card-scientific">{plant.nome_cientifico}</span>
-                    <span class="badge-pill" style="background-color: #2D6A4F; color: #FFFFFF;">
-                        {plant.nivel_evidencia}
-                    </span>
-                </div>
-            </div>
-            """)
-            st.markdown(card_html, unsafe_allow_html=True)
+            # Renderiza card com função segura
+            st.markdown(render_card_html(plant, img_html, "#2D6A4F", "#FFFFFF"), unsafe_allow_html=True)
             
             if st.button(f"Ver Detalhes", key=f"btn_{plant.id}"):
                 change_view('detail', plant.id)
@@ -327,65 +284,29 @@ elif st.session_state['view'] == 'detail':
         with c1:
             img_path = f"imagens_plantas/{plant.id}.jpg"
             img_b64 = get_img_as_base64(img_path)
-            if img_b64:
-                st.markdown(clean_html(f"""
-                    <div class="taped-photo">
-                        <img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
-                        <div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
-                    </div>
-                """), unsafe_allow_html=True)
-            else:
-                st.markdown(clean_html("""
-                    <div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
-                        <span>Imagem não carregada</span>
-                    </div>
-                """), unsafe_allow_html=True)
             
-            st.markdown(clean_html(f"""
-            <div class="detail-card">
-                <h3 style="margin-top:0;">🏷️ Categoria</h3><p>{plant.categoria}</p>
-                <hr style="margin: 15px 0;">
-                <h3>🧪 Evidência</h3><p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
-            </div>"""), unsafe_allow_html=True)
+            if img_b64:
+                st.markdown(f"""
+<div class="taped-photo">
+<img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
+<div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
+</div>
+""", unsafe_allow_html=True)
+            else:
+                st.markdown("""
+<div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
+<span>Imagem não carregada</span>
+</div>
+""", unsafe_allow_html=True)
+            
+            st.markdown(f"""
+<div class="detail-card">
+<h3 style="margin-top:0;">🏷️ Categoria</h3><p>{plant.categoria}</p>
+<hr style="margin: 15px 0;">
+<h3>🧪 Evidência</h3><p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
+</div>
+""", unsafe_allow_html=True)
 
         with c2:
-            # APLICAÇÃO FINAL DA FUNÇÃO clean_html() PARA CORRIGIR O BUG
-            details_html = clean_html(f"""
-            <div class="detail-card">
-                <h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
-                <h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
-
-                <div style='background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;'>
-                    {plant.descricao}
-                </div>
-
-                <h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>
-                <p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>
-
-                <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">
-                    <h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>
-                    <p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>
-                </div>
-
-                <hr style="margin: 30px 0; border-top: 1px solid #ddd;">
-
-                <h3 style='color: #8B0000 !important; margin-bottom: 20px;'>⚠️ Perfil de Segurança</h3>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <strong>Efeitos Adversos:</strong>
-                        <p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>
-                    </div>
-                    <div>
-                        <strong>Contraindicações:</strong>
-                        <p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <strong>Interações:</strong>
-                    <p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
-                </div>
-            </div>
-            """)
-            st.markdown(details_html, unsafe_allow_html=True)
+            # Usa a função blindada render_details_html
+            st.markdown(render_details_html(plant), unsafe_allow_html=True)
