@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import base64
+import textwrap
 from io import BytesIO
 
 # --- IMPORTS ---
@@ -61,7 +62,7 @@ def get_logo_html(image_path, link_url):
         return f'<a href="{link_url}" target="_blank"><img src="data:image/png;base64,{encoded}" class="sidebar-logo"></a>'
     return ""
 
-# --- CSS AVANÇADO (BOTANICAL UI V11 - FINAL) ---
+# --- CSS AVANÇADO (BOTANICAL UI V13 - FINAL BLINDADO) ---
 css_background = f"""
     .stApp {{
         background-image: url("data:image/jpeg;base64,{bg_b64}");
@@ -152,8 +153,8 @@ st.markdown(f"""
 
     /* --- CARTÃO DE DETALHES TRANSLÚCIDO --- */
     .detail-card {{
-        background-color: rgba(255, 255, 255, 0.93); /* Branco translúcido forte */
-        padding: 30px;
+        background-color: rgba(255, 255, 255, 0.95); /* Quase opaco para leitura */
+        padding: 40px;
         border-radius: 15px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(8px);
@@ -270,7 +271,8 @@ with st.sidebar:
 # ==============================================================================
 if st.session_state['view'] == 'home':
     
-    st.markdown("""
+    # Header Overlay com dedent para evitar bug de indentação
+    header_html = textwrap.dedent("""
     <div class="header-overlay animate-enter">
         <h1 style="color: #1a472a; font-size: 4rem;">HERBARIO DIGITAL</h1>
         <p style="font-size: 1.2rem; color: #1a472a; font-style: italic; margin-top: -10px;">
@@ -278,7 +280,8 @@ if st.session_state['view'] == 'home':
         </p>
         <div style="width: 100px; height: 3px; background: #1a472a; margin: 20px auto;"></div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
+    st.markdown(header_html, unsafe_allow_html=True)
 
     col_search, col_filter = st.columns([3, 1])
     with col_search:
@@ -301,14 +304,15 @@ if st.session_state['view'] == 'home':
             if img_b64:
                 img_html = f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img-v2">'
             else:
-                img_html = f'''
+                img_html = textwrap.dedent('''
                 <div style="height:100%; background:#f0f4f1; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#8ba896;">
                     <div style="font-size:3em;">🌿</div>
                     <div style="font-size:0.8em; font-family:'Cinzel';">Imagem Indisponível</div>
                 </div>
-                '''
+                ''')
 
-            st.markdown(f"""
+            # USANDO textwrap.dedent PARA REMOVER ESPAÇOS E CORRIGIR O BUG DO STREAMLIT
+            card_html = textwrap.dedent(f"""
             <div class="plant-card-v2 animate-enter" style="animation-delay: {idx * 0.03}s">
                 <div class="card-img-wrapper">{img_html}</div>
                 <div class="card-body">
@@ -319,7 +323,8 @@ if st.session_state['view'] == 'home':
                     </span>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
+            st.markdown(card_html, unsafe_allow_html=True)
             
             if st.button(f"Ver Detalhes", key=f"btn_{plant.id}"):
                 change_view('detail', plant.id)
@@ -338,27 +343,27 @@ elif st.session_state['view'] == 'detail':
 
         c1, c2 = st.columns([1, 2])
         
-        # Coluna da Imagem (Esquerda)
         with c1:
             img_path = f"imagens_plantas/{plant.id}.jpg"
             img_b64 = get_img_as_base64(img_path)
             
             if img_b64:
-                st.markdown(f"""
+                img_html = f"""
                     <div class="taped-photo">
                         <img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
                         <div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
                     </div>
-                """, unsafe_allow_html=True)
+                """
             else:
-                st.markdown(f"""
+                img_html = """
                     <div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
                         <span>Imagem não carregada</span>
                     </div>
-                """, unsafe_allow_html=True)
+                """
+            st.markdown(textwrap.dedent(img_html), unsafe_allow_html=True)
             
-            # Info Rápida dentro do cartão translúcido
-            st.markdown(f"""
+            # Info Rápida
+            info_html = textwrap.dedent(f"""
             <div class="detail-card">
                 <h3 style="margin-top:0;">🏷️ Categoria</h3>
                 <p>{plant.categoria}</p>
@@ -366,11 +371,12 @@ elif st.session_state['view'] == 'detail':
                 <h3>🧪 Evidência</h3>
                 <p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
             </div>
-            """, unsafe_allow_html=True)
+            """)
+            st.markdown(info_html, unsafe_allow_html=True)
 
-        # Coluna do Texto (Direita) - DENTRO DO CARTÃO TRANSLÚCIDO
         with c2:
-            st.markdown(f"""
+            # CORREÇÃO DEFINITIVA DE INDENTAÇÃO: textwrap.dedent
+            details_html = textwrap.dedent(f"""
             <div class="detail-card">
                 <h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
                 <h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
@@ -407,4 +413,5 @@ elif st.session_state['view'] == 'detail':
                     <p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
+            st.markdown(details_html, unsafe_allow_html=True)
