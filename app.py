@@ -1,8 +1,4 @@
-import os
-import sys
-
-# --- CONTEÚDO DO APP.PY (VERSÃO FINAL COM CORREÇÕES VISUAIS) ---
-APP_PY_CONTENT = r'''import streamlit as st
+import streamlit as st
 import os
 import base64
 from io import BytesIO
@@ -65,7 +61,7 @@ def get_logo_html(image_path, link_url):
         return f'<a href="{link_url}" target="_blank"><img src="data:image/png;base64,{encoded}" class="sidebar-logo"></a>'
     return ""
 
-# --- CSS AVANÇADO (BOTANICAL UI V10 - FINAL) ---
+# --- CSS AVANÇADO (BOTANICAL UI V11 - FINAL) ---
 css_background = f"""
     .stApp {{
         background-image: url("data:image/jpeg;base64,{bg_b64}");
@@ -312,17 +308,18 @@ if st.session_state['view'] == 'home':
                 </div>
                 '''
 
-            # Correção de indentação no HTML para evitar blocos de código
-            st.markdown(f"""<div class="plant-card-v2 animate-enter" style="animation-delay: {idx * 0.03}s">
-<div class="card-img-wrapper">{img_html}</div>
-<div class="card-body">
-<div class="card-title-v2">{plant.nome}</div>
-<span class="card-scientific">{plant.nome_cientifico}</span>
-<span class="badge-pill">
-{plant.nivel_evidencia}
-</span>
-</div>
-</div>""", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="plant-card-v2 animate-enter" style="animation-delay: {idx * 0.03}s">
+                <div class="card-img-wrapper">{img_html}</div>
+                <div class="card-body">
+                    <div class="card-title-v2">{plant.nome}</div>
+                    <span class="card-scientific">{plant.nome_cientifico}</span>
+                    <span class="badge-pill">
+                        {plant.nivel_evidencia}
+                    </span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
             if st.button(f"Ver Detalhes", key=f"btn_{plant.id}"):
                 change_view('detail', plant.id)
@@ -347,148 +344,67 @@ elif st.session_state['view'] == 'detail':
             img_b64 = get_img_as_base64(img_path)
             
             if img_b64:
-                st.markdown(f"""<div class="taped-photo">
-<img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
-<div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
-</div>""", unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div class="taped-photo">
+                        <img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
+                        <div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
+                    </div>
+                """, unsafe_allow_html=True)
             else:
-                st.markdown(f"""<div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
-<span>Imagem não carregada</span>
-</div>""", unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
+                        <span>Imagem não carregada</span>
+                    </div>
+                """, unsafe_allow_html=True)
             
-            # Info Rápida
-            st.markdown(f"""<div class="detail-card">
-<h3 style="margin-top:0;">🏷️ Categoria</h3>
-<p>{plant.categoria}</p>
-<hr style="margin: 15px 0;">
-<h3>🧪 Evidência</h3>
-<p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
-</div>""", unsafe_allow_html=True)
+            # Info Rápida dentro do cartão translúcido
+            st.markdown(f"""
+            <div class="detail-card">
+                <h3 style="margin-top:0;">🏷️ Categoria</h3>
+                <p>{plant.categoria}</p>
+                <hr style="margin: 15px 0;">
+                <h3>🧪 Evidência</h3>
+                <p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-        # Coluna do Texto (Direita) - CORREÇÃO DE INDENTAÇÃO PARA HTML
+        # Coluna do Texto (Direita) - DENTRO DO CARTÃO TRANSLÚCIDO
         with c2:
-            st.markdown(f"""<div class="detail-card">
-<h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
-<h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
-
-<div style='background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;'>
-{plant.descricao}
-</div>
-
-<h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>
-<p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>
-
-<div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">
-<h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>
-<p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>
-</div>
-
-<hr style="margin: 30px 0; border-top: 1px solid #ddd;">
-
-<h3 style='color: #8B0000 !important; margin-bottom: 20px;'>⚠️ Perfil de Segurança</h3>
-
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-<div>
-<strong>Efeitos Adversos:</strong>
-<p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>
-</div>
-<div>
-<strong>Contraindicações:</strong>
-<p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>
-</div>
-</div>
-
-<div style="margin-top: 20px;">
-<strong>Interações:</strong>
-<p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
-</div>
-</div>""", unsafe_allow_html=True)
-'''
-
-# --- SCRIPT DE RESGATE E EXTRAÇÃO ---
-RESTAURAR_TUDO_PY = r'''
-import fitz  # PyMuPDF
-import os
-import sys
-from PIL import Image
-
-# Força UTF-8 para evitar erros no Windows
-if sys.platform == "win32":
-    try:
-        sys.stdout.reconfigure(encoding='utf-8')
-    except AttributeError:
-        pass
-
-# Páginas das plantas no PDF
-PAGINAS_PLANTAS = {
-    "tribulus": 8, "maca": 13, "ashwagandha": 18, "mucuna": 24, "longjack": 29,
-    "serenoa": 34, "ajuga": 39, "prunus": 43, "urtica": 48, "feno": 53,
-    "tetradium": 58, "cyanotis": 63, "kaempferia": 67, "bulbine": 72
-}
-
-def restaurar():
-    print("--- INICIANDO RESTAURACAO DO PROJETO ---")
-
-    # 1. Recriar requirements.txt
-    with open("requirements.txt", "w") as f:
-        f.write("streamlit\nPillow\n")
-    print("[OK] requirements.txt criado.")
-
-    # 2. Extrair e Otimizar Imagens
-    pdf_nome = "livro pm desempenho fisico 2025.pdf"
-    
-    if not os.path.exists(pdf_nome):
-        print(f"[ERRO] Falta o arquivo '{pdf_nome}'.")
-        print("Coloque o PDF na pasta e rode novamente.")
-        return
-
-    if not os.path.exists("imagens_plantas"):
-        os.makedirs("imagens_plantas")
-
-    try:
-        doc = fitz.open(pdf_nome)
-        print("[INFO] Extraindo imagens do PDF...")
-        
-        for planta_id, pagina_num in PAGINAS_PLANTAS.items():
-            try:
-                if pagina_num < len(doc):
-                    page = doc.load_page(pagina_num)
-                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-                    
-                    # Salva direto como JPG Otimizado
-                    img_path = f"imagens_plantas/{planta_id}.jpg"
-                    
-                    # Converte de pixmap para PIL Image para otimizar
-                    data = pix.tobytes("ppm")
-                    import io
-                    img = Image.open(io.BytesIO(data)).convert("RGB")
-                    img.thumbnail((800, 1200))
-                    img.save(img_path, "JPEG", quality=75, optimize=True)
-                    
-                    print(f"[OK] Gerado: {img_path}")
-                else:
-                    print(f"[AVISO] Pagina {pagina_num} nao existe.")
-            except Exception as e:
-                print(f"[ERRO] {planta_id}: {e}")
+            st.markdown(f"""
+            <div class="detail-card">
+                <h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
+                <h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
                 
-        print("\n[SUCESSO] Restauracao concluida!")
-        print("Agora voce tem 'app.py' (cole o codigo), 'requirements.txt' e a pasta 'imagens_plantas'.")
-        
-    except Exception as e:
-        print(f"[ERRO CRITICO] {e}")
+                <div style='background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;'>
+                    {plant.descricao}
+                </div>
+                
+                <h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>
+                <p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>
+                
+                <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">
+                    <h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>
+                    <p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>
+                </div>
 
-if __name__ == "__main__":
-    restaurar()
-'''
-
-def criar_script_restauracao():
-    with open("restaurar_projeto.py", "w", encoding="utf-8") as f:
-        f.write(RESTAURAR_TUDO_PY)
-    
-    with open("app.py", "w", encoding="utf-8") as f:
-        f.write(APP_PY_CONTENT)
-
-    print("[INFO] Scripts criados. Execute 'python restaurar_projeto.py' para recuperar as imagens.")
-
-if __name__ == "__main__":
-    criar_script_restauracao()
+                <hr style="margin: 30px 0; border-top: 1px solid #ddd;">
+                
+                <h3 style='color: #8B0000 !important; margin-bottom: 20px;'>⚠️ Perfil de Segurança</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <strong>Efeitos Adversos:</strong>
+                        <p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>
+                    </div>
+                    <div>
+                        <strong>Contraindicações:</strong>
+                        <p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <strong>Interações:</strong>
+                    <p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
