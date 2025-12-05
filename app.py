@@ -3,7 +3,7 @@ import os
 import base64
 from io import BytesIO
 
-# --- IMPORTS (SEM FITZ/PDF) ---
+# --- IMPORTS ---
 try:
     from PIL import Image, ImageEnhance
 except ImportError:
@@ -61,7 +61,7 @@ def get_logo_html(image_path, link_url):
         return f'<a href="{link_url}" target="_blank"><img src="data:image/png;base64,{encoded}" class="sidebar-logo"></a>'
     return ""
 
-# --- CSS AVANÇADO (BOTANICAL UI V9 - CORREÇÃO DE CONTRASTE) ---
+# --- CSS AVANÇADO (BOTANICAL UI V7) ---
 css_background = f"""
     .stApp {{
         background-image: url("data:image/jpeg;base64,{bg_b64}");
@@ -81,12 +81,13 @@ st.markdown(f"""
     
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
     
-    /* Header Overlay (Fundo branco no título) */
+    /* Header Overlay */
     .header-overlay {{
         background-color: rgba(255, 255, 255, 0.95);
         padding: 30px;
         border-radius: 15px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        backdrop-filter: blur(5px);
         margin-bottom: 30px;
         text-align: center;
         border: 1px solid rgba(255,255,255,0.5);
@@ -115,7 +116,7 @@ st.markdown(f"""
     .card-img-v2 {{ width: 100%; height: 100%; object-fit: cover; }}
     .card-body {{ padding: 15px; text-align: center; }}
     
-    /* Badges (Verde Sólido e Texto Branco) */
+    /* Badges */
     .badge-pill {{ 
         display: inline-block; 
         padding: 6px 14px; 
@@ -129,7 +130,7 @@ st.markdown(f"""
         box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
     }}
 
-    /* Botões (Verde e Texto Branco) */
+    /* Botões */
     div.stButton > button {{ 
         background-color: #1a472a !important; 
         color: #FFFFFF !important; 
@@ -147,22 +148,21 @@ st.markdown(f"""
         border-color: #2d5a3f; 
         transform: scale(1.02);
     }}
-    /* Garante texto branco dentro do botão */
     div.stButton > button p {{ color: #FFFFFF !important; }}
 
-    /* --- CARTÃO DE DETALHES TRANSLÚCIDO (CORREÇÃO PEDIDA) --- */
+    /* --- ESTILO NOVO: CARTÃO DE DETALHES TRANSLÚCIDO --- */
     .detail-card {{
-        background-color: rgba(255, 255, 255, 0.95); /* Fundo branco translúcido */
-        padding: 40px;
+        background-color: rgba(255, 255, 255, 0.93); /* Branco translúcido forte */
+        padding: 30px;
         border-radius: 15px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.5);
         margin-bottom: 20px;
-        color: #2c3e50; /* Texto escuro para contraste */
+        height: 100%;
     }}
 
-    /* Estilo Polaroid */
+    /* Estilo Polaroid da imagem de detalhes */
     .taped-photo {{ 
         background: white; 
         padding: 10px 10px 40px 10px; 
@@ -251,13 +251,13 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.markdown("---")
-    st.markdown("**Desenvolvimento:** Thiago Abranches")
+    st.markdown("**Desenvolvedor da versão aplicativo:** Thiago Abranches")
     st.markdown("---")
     
-    st.error("🚫 **USO EXCLUSIVO**\n\nEste aplicativo é destinado a profissionais prescritores habilitados, seu uso não substitui a avaliação clinica do profissional.")
+    st.error("⚠️ **Uso profissional**\n\nEste aplicativo é destinado a profissionais prescritores habilitados, seu uso não substitui a avaliação clinica do profissional.")
     
     st.markdown("""
-        <a href="https://www.plantaciencia.com/_files/ugd/aedcbc_09803571856343ea82fed6ba99b0b7f2.pdf" target="_blank" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%); color: white !important; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-top: 10px; margin-bottom: 20px;">
+        <a href="https://www.plantaciencia.com/_files/ugd/aedcbc_09803571856343ea82fed6ba99b0b7f2.pdf" target="_blank" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%); color: #FFFFFF !important; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-top: 10px; margin-bottom: 20px;">
             📥 Baixar Livro (PDF)
         </a>
     """, unsafe_allow_html=True)
@@ -270,13 +270,13 @@ with st.sidebar:
 if st.session_state['view'] == 'home':
     
     st.markdown("""
-        <div class="header-overlay animate-enter">
-            <h1 style="color: #1a472a; font-size: 4rem;">HERBARIO DIGITAL</h1>
-            <p style="font-size: 1.2rem; color: #1a472a; font-style: italic; margin-top: -10px;">
-                Guia de Plantas Medicinais e Desempenho Físico
-            </p>
-            <div style="width: 100px; height: 3px; background: #1a472a; margin: 20px auto;"></div>
-        </div>
+    <div class="header-overlay animate-enter">
+        <h1 style="color: #1a472a; font-size: 4rem;">HERBARIO DIGITAL</h1>
+        <p style="font-size: 1.2rem; color: #1a472a; font-style: italic; margin-top: -10px;">
+            Guia de Plantas Medicinais e Desempenho Físico
+        </p>
+        <div style="width: 100px; height: 3px; background: #1a472a; margin: 20px auto;"></div>
+    </div>
     """, unsafe_allow_html=True)
 
     col_search, col_filter = st.columns([3, 1])
@@ -307,18 +307,17 @@ if st.session_state['view'] == 'home':
                 </div>
                 '''
 
-            st.markdown(f"""
-            <div class="plant-card-v2 animate-enter" style="animation-delay: {idx * 0.03}s">
-                <div class="card-img-wrapper">{img_html}</div>
-                <div class="card-body">
-                    <div class="card-title-v2">{plant.nome}</div>
-                    <span class="card-scientific">{plant.nome_cientifico}</span>
-                    <span class="badge-pill">
-                        {plant.nivel_evidencia}
-                    </span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            # Correção de indentação no HTML para evitar blocos de código
+            st.markdown(f"""<div class="plant-card-v2 animate-enter" style="animation-delay: {idx * 0.03}s">
+<div class="card-img-wrapper">{img_html}</div>
+<div class="card-body">
+<div class="card-title-v2">{plant.nome}</div>
+<span class="card-scientific">{plant.nome_cientifico}</span>
+<span class="badge-pill">
+{plant.nivel_evidencia}
+</span>
+</div>
+</div>""", unsafe_allow_html=True)
             
             if st.button(f"Ver Detalhes", key=f"btn_{plant.id}"):
                 change_view('detail', plant.id)
@@ -343,67 +342,59 @@ elif st.session_state['view'] == 'detail':
             img_b64 = get_img_as_base64(img_path)
             
             if img_b64:
-                st.markdown(f"""
-                    <div class="taped-photo">
-                        <img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
-                        <div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
-                    </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"""<div class="taped-photo">
+<img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
+<div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
+</div>""", unsafe_allow_html=True)
             else:
-                st.markdown(f"""
-                    <div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
-                        <span>Imagem não carregada</span>
-                    </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"""<div class="taped-photo" style="height:300px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; color:#ccc;">
+<span>Imagem não carregada</span>
+</div>""", unsafe_allow_html=True)
             
-            # Info Rápida dentro do cartão translúcido
-            st.markdown(f"""
-            <div class="detail-card">
-                <h3 style="margin-top:0;">🏷️ Categoria</h3>
-                <p>{plant.categoria}</p>
-                <hr style="margin: 15px 0;">
-                <h3>🧪 Evidência</h3>
-                <p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            # Info Rápida
+            st.markdown(f"""<div class="detail-card">
+<h3 style="margin-top:0;">🏷️ Categoria</h3>
+<p>{plant.categoria}</p>
+<hr style="margin: 15px 0;">
+<h3>🧪 Evidência</h3>
+<p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
+</div>""", unsafe_allow_html=True)
 
-        # Coluna do Texto (Direita) - DENTRO DO CARTÃO TRANSLÚCIDO
+        # Coluna do Texto (Direita) - CORREÇÃO DE INDENTAÇÃO PARA HTML
         with c2:
-            st.markdown(f"""
-            <div class="detail-card">
-                <h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
-                <h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
-                
-                <div style='background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;'>
-                    {plant.descricao}
-                </div>
-                
-                <h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>
-                <p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>
-                
-                <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">
-                    <h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>
-                    <p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>
-                </div>
+            st.markdown(f"""<div class="detail-card">
+<h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
+<h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
 
-                <hr style="margin: 30px 0; border-top: 1px solid #ddd;">
-                
-                <h3 style='color: #8B0000 !important; margin-bottom: 20px;'>⚠️ Perfil de Segurança</h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <strong>Efeitos Adversos:</strong>
-                        <p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>
-                    </div>
-                    <div>
-                        <strong>Contraindicações:</strong>
-                        <p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <strong>Interações:</strong>
-                    <p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+<div style='background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;'>
+{plant.descricao}
+</div>
+
+<h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>
+<p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>
+
+<div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">
+<h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>
+<p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>
+</div>
+
+<hr style="margin: 30px 0; border-top: 1px solid #ddd;">
+
+<h3 style='color: #8B0000 !important; margin-bottom: 20px;'>⚠️ Perfil de Segurança</h3>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+<div>
+<strong>Efeitos Adversos:</strong>
+<p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>
+</div>
+<div>
+<strong>Contraindicações:</strong>
+<p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>
+</div>
+</div>
+
+<div style="margin-top: 20px;">
+<strong>Interações:</strong>
+<p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
+</div>
+</div>""", unsafe_allow_html=True)
