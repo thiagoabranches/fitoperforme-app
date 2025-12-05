@@ -1,4 +1,8 @@
-import streamlit as st
+import os
+import sys
+
+# --- CONTEÚDO DO APP.PY (VERSÃO FINAL COM CORREÇÕES VISUAIS) ---
+APP_PY_CONTENT = r'''import streamlit as st
 import os
 import base64
 from io import BytesIO
@@ -61,7 +65,7 @@ def get_logo_html(image_path, link_url):
         return f'<a href="{link_url}" target="_blank"><img src="data:image/png;base64,{encoded}" class="sidebar-logo"></a>'
     return ""
 
-# --- CSS AVANÇADO (BOTANICAL UI V7) ---
+# --- CSS AVANÇADO (BOTANICAL UI V10 - FINAL) ---
 css_background = f"""
     .stApp {{
         background-image: url("data:image/jpeg;base64,{bg_b64}");
@@ -150,7 +154,7 @@ st.markdown(f"""
     }}
     div.stButton > button p {{ color: #FFFFFF !important; }}
 
-    /* --- ESTILO NOVO: CARTÃO DE DETALHES TRANSLÚCIDO --- */
+    /* --- CARTÃO DE DETALHES TRANSLÚCIDO --- */
     .detail-card {{
         background-color: rgba(255, 255, 255, 0.93); /* Branco translúcido forte */
         padding: 30px;
@@ -160,6 +164,7 @@ st.markdown(f"""
         border: 1px solid rgba(255, 255, 255, 0.5);
         margin-bottom: 20px;
         height: 100%;
+        color: #2c3e50;
     }}
 
     /* Estilo Polaroid da imagem de detalhes */
@@ -398,3 +403,92 @@ elif st.session_state['view'] == 'detail':
 <p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
 </div>
 </div>""", unsafe_allow_html=True)
+'''
+
+# --- SCRIPT DE RESGATE E EXTRAÇÃO ---
+RESTAURAR_TUDO_PY = r'''
+import fitz  # PyMuPDF
+import os
+import sys
+from PIL import Image
+
+# Força UTF-8 para evitar erros no Windows
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+
+# Páginas das plantas no PDF
+PAGINAS_PLANTAS = {
+    "tribulus": 8, "maca": 13, "ashwagandha": 18, "mucuna": 24, "longjack": 29,
+    "serenoa": 34, "ajuga": 39, "prunus": 43, "urtica": 48, "feno": 53,
+    "tetradium": 58, "cyanotis": 63, "kaempferia": 67, "bulbine": 72
+}
+
+def restaurar():
+    print("--- INICIANDO RESTAURACAO DO PROJETO ---")
+
+    # 1. Recriar requirements.txt
+    with open("requirements.txt", "w") as f:
+        f.write("streamlit\nPillow\n")
+    print("[OK] requirements.txt criado.")
+
+    # 2. Extrair e Otimizar Imagens
+    pdf_nome = "livro pm desempenho fisico 2025.pdf"
+    
+    if not os.path.exists(pdf_nome):
+        print(f"[ERRO] Falta o arquivo '{pdf_nome}'.")
+        print("Coloque o PDF na pasta e rode novamente.")
+        return
+
+    if not os.path.exists("imagens_plantas"):
+        os.makedirs("imagens_plantas")
+
+    try:
+        doc = fitz.open(pdf_nome)
+        print("[INFO] Extraindo imagens do PDF...")
+        
+        for planta_id, pagina_num in PAGINAS_PLANTAS.items():
+            try:
+                if pagina_num < len(doc):
+                    page = doc.load_page(pagina_num)
+                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                    
+                    # Salva direto como JPG Otimizado
+                    img_path = f"imagens_plantas/{planta_id}.jpg"
+                    
+                    # Converte de pixmap para PIL Image para otimizar
+                    data = pix.tobytes("ppm")
+                    import io
+                    img = Image.open(io.BytesIO(data)).convert("RGB")
+                    img.thumbnail((800, 1200))
+                    img.save(img_path, "JPEG", quality=75, optimize=True)
+                    
+                    print(f"[OK] Gerado: {img_path}")
+                else:
+                    print(f"[AVISO] Pagina {pagina_num} nao existe.")
+            except Exception as e:
+                print(f"[ERRO] {planta_id}: {e}")
+                
+        print("\n[SUCESSO] Restauracao concluida!")
+        print("Agora voce tem 'app.py' (cole o codigo), 'requirements.txt' e a pasta 'imagens_plantas'.")
+        
+    except Exception as e:
+        print(f"[ERRO CRITICO] {e}")
+
+if __name__ == "__main__":
+    restaurar()
+'''
+
+def criar_script_restauracao():
+    with open("restaurar_projeto.py", "w", encoding="utf-8") as f:
+        f.write(RESTAURAR_TUDO_PY)
+    
+    with open("app.py", "w", encoding="utf-8") as f:
+        f.write(APP_PY_CONTENT)
+
+    print("[INFO] Scripts criados. Execute 'python restaurar_projeto.py' para recuperar as imagens.")
+
+if __name__ == "__main__":
+    criar_script_restauracao()
