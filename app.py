@@ -3,7 +3,7 @@ import os
 import base64
 from io import BytesIO
 
-# --- TENTATIVA DE IMPORTAÇÃO ROBUSTA ---
+# --- IMPORTS (SEM FITZ/PDF) ---
 try:
     from PIL import Image, ImageEnhance
 except ImportError:
@@ -44,7 +44,8 @@ def get_processed_background():
         enhancer = ImageEnhance.Brightness(img)
         img = enhancer.enhance(1.15) # Clarear levemente
         buffered = BytesIO()
-        img.save(buffered, format="PNG")
+        img = img.convert('RGB')
+        img.save(buffered, format="JPEG", quality=70)
         return base64.b64encode(buffered.getvalue()).decode()
     except Exception:
         return None
@@ -60,18 +61,16 @@ def get_logo_html(image_path, link_url):
         return f'<a href="{link_url}" target="_blank"><img src="data:image/png;base64,{encoded}" class="sidebar-logo"></a>'
     return ""
 
-# --- CSS AVANÇADO (BOTANICAL UI V6) ---
+# --- CSS AVANÇADO (BOTANICAL UI V9 - CORREÇÃO DE CONTRASTE) ---
 css_background = f"""
     .stApp {{
-        background-image: url("data:image/png;base64,{bg_b64}");
+        background-image: url("data:image/jpeg;base64,{bg_b64}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
     }}
 """ if bg_b64 else """
-    .stApp {
-        background-color: #F7F5EB;
-    }
+    .stApp { background-color: #F7F5EB; }
 """
 
 st.markdown(f"""
@@ -82,13 +81,12 @@ st.markdown(f"""
     
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
     
-    /* Container Translúcido para o Título */
+    /* Header Overlay (Fundo branco no título) */
     .header-overlay {{
         background-color: rgba(255, 255, 255, 0.95);
         padding: 30px;
         border-radius: 15px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        backdrop-filter: blur(5px);
         margin-bottom: 30px;
         text-align: center;
         border: 1px solid rgba(255,255,255,0.5);
@@ -99,8 +97,8 @@ st.markdown(f"""
         font-family: 'Cinzel', serif !important; 
         color: #1a472a !important; 
         font-size: 3.5rem !important; 
-        text-shadow: none !important; 
         margin-bottom: 5px !important; 
+        text-shadow: none !important; 
     }}
     h2, h3 {{ font-family: 'Cinzel', serif !important; color: #2d5a3f !important; }}
     p, li, span, div, a {{ font-family: 'Fauna One', serif; color: #2c3e50; }}
@@ -110,14 +108,14 @@ st.markdown(f"""
     .sidebar-logo {{ display: block; margin: 0 auto 20px auto; width: 90%; transition: transform 0.2s; }}
     .sidebar-logo:hover {{ transform: scale(1.05); cursor: pointer; }}
 
-    /* Cards */
+    /* Cards da Home */
     .plant-card-v2 {{ background-color: rgba(255, 255, 255, 0.95); border: 1px solid #dcdcdc; border-radius: 8px 25px 8px 25px; padding: 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s ease; height: 100%; overflow: hidden; }}
     .plant-card-v2:hover {{ transform: translateY(-5px); box-shadow: 0 8px 20px rgba(27, 77, 62, 0.2); border-color: #4CAF50; }}
     .card-img-wrapper {{ height: 180px; overflow: hidden; border-bottom: 3px solid #1a472a; background-color: #f4f4f4; }}
     .card-img-v2 {{ width: 100%; height: 100%; object-fit: cover; }}
     .card-body {{ padding: 15px; text-align: center; }}
     
-    /* Badges */
+    /* Badges (Verde Sólido e Texto Branco) */
     .badge-pill {{ 
         display: inline-block; 
         padding: 6px 14px; 
@@ -131,7 +129,7 @@ st.markdown(f"""
         box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
     }}
 
-    /* Botões Padrão */
+    /* Botões (Verde e Texto Branco) */
     div.stButton > button {{ 
         background-color: #1a472a !important; 
         color: #FFFFFF !important; 
@@ -149,11 +147,30 @@ st.markdown(f"""
         border-color: #2d5a3f; 
         transform: scale(1.02);
     }}
+    /* Garante texto branco dentro do botão */
     div.stButton > button p {{ color: #FFFFFF !important; }}
 
-    /* Detalhes */
-    .paper-sheet {{ background-color: #fffbf0; padding: 40px; box-shadow: 0 0 20px rgba(0,0,0,0.1); border-radius: 4px; max-width: 1000px; margin: 0 auto; border: 1px solid #e0e0e0; }}
-    .taped-photo {{ background: white; padding: 10px 10px 40px 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); transform: rotate(-1.5deg); margin-bottom: 20px; }}
+    /* --- CARTÃO DE DETALHES TRANSLÚCIDO (CORREÇÃO PEDIDA) --- */
+    .detail-card {{
+        background-color: rgba(255, 255, 255, 0.95); /* Fundo branco translúcido */
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        margin-bottom: 20px;
+        color: #2c3e50; /* Texto escuro para contraste */
+    }}
+
+    /* Estilo Polaroid */
+    .taped-photo {{ 
+        background: white; 
+        padding: 10px 10px 40px 10px; 
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2); 
+        transform: rotate(-1.5deg); 
+        margin-bottom: 20px; 
+        border: 1px solid #ddd;
+    }}
     
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}}
     </style>
@@ -201,7 +218,6 @@ if 'selected_plant_id' not in st.session_state: st.session_state['selected_plant
 
 # --- SIDEBAR (INFO E CONTATO) ---
 with st.sidebar:
-    # Logo do Apoio Clicável
     logo_path = "image_ecaac2.png"
     logo_html = get_logo_html(logo_path, "https://www.plantaciencia.com/")
     if logo_html:
@@ -238,10 +254,8 @@ with st.sidebar:
     st.markdown("**Desenvolvimento:** Thiago Abranches")
     st.markdown("---")
     
-    # Aviso Atualizado
     st.error("🚫 **USO EXCLUSIVO**\n\nEste aplicativo é destinado a profissionais prescritores habilitados, seu uso não substitui a avaliação clinica do profissional.")
     
-    # Botão Download Livro
     st.markdown("""
         <a href="https://www.plantaciencia.com/_files/ugd/aedcbc_09803571856343ea82fed6ba99b0b7f2.pdf" target="_blank" style="display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%); color: white !important; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-top: 10px; margin-bottom: 20px;">
             📥 Baixar Livro (PDF)
@@ -280,11 +294,11 @@ if st.session_state['view'] == 'home':
         col = cols[idx % 4]
         
         with col:
-            img_path = f"imagens_plantas/{plant.id}.png"
+            img_path = f"imagens_plantas/{plant.id}.jpg"
             img_b64 = get_img_as_base64(img_path)
             
             if img_b64:
-                img_html = f'<img src="data:image/png;base64,{img_b64}" class="card-img-v2">'
+                img_html = f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img-v2">'
             else:
                 img_html = f'''
                 <div style="height:100%; background:#f0f4f1; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#8ba896;">
@@ -321,16 +335,17 @@ elif st.session_state['view'] == 'detail':
             change_view('home')
             st.rerun()
 
-        st.markdown(f"""<div class="paper-sheet animate-enter">""", unsafe_allow_html=True)
         c1, c2 = st.columns([1, 2])
         
+        # Coluna da Imagem (Esquerda)
         with c1:
-            img_path = f"imagens_plantas/{plant.id}.png"
+            img_path = f"imagens_plantas/{plant.id}.jpg"
             img_b64 = get_img_as_base64(img_path)
+            
             if img_b64:
                 st.markdown(f"""
                     <div class="taped-photo">
-                        <img src="data:image/png;base64,{img_b64}" style="width: 100%;">
+                        <img src="data:image/jpeg;base64,{img_b64}" style="width: 100%;">
                         <div style="text-align:center; font-family:'Courier New'; font-size:0.8em; margin-top:5px; color:#555;">Fig. 1: {plant.nome}</div>
                     </div>
                 """, unsafe_allow_html=True)
@@ -341,39 +356,54 @@ elif st.session_state['view'] == 'detail':
                     </div>
                 """, unsafe_allow_html=True)
             
-            st.markdown("### 🏷️ Categoria")
-            st.info(plant.categoria)
-            st.markdown("### 🧪 Evidência")
-            if plant.nivel_evidencia == "Alto": st.success("Nível Alto: Estudos Clínicos Robustos")
-            elif "Risco" in plant.nivel_evidencia: st.error("⚠️ Atenção: Risco Elevado")
-            else: st.warning(f"Nível: {plant.nivel_evidencia}")
+            # Info Rápida dentro do cartão translúcido
+            st.markdown(f"""
+            <div class="detail-card">
+                <h3 style="margin-top:0;">🏷️ Categoria</h3>
+                <p>{plant.categoria}</p>
+                <hr style="margin: 15px 0;">
+                <h3>🧪 Evidência</h3>
+                <p>{'Nível Alto: Estudos Clínicos Robustos' if plant.nivel_evidencia == 'Alto' else 'Atenção: Risco Elevado' if 'Risco' in plant.nivel_evidencia else f'Nível: {plant.nivel_evidencia}'}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
+        # Coluna do Texto (Direita) - DENTRO DO CARTÃO TRANSLÚCIDO
         with c2:
             st.markdown(f"""
-                <h1 style="text-align: left; font-size: 3rem !important; color: #1a472a;">{plant.nome}</h1>
-                <h3 style="font-style: italic; color: #666 !important; margin-top: -15px;">{plant.nome_cientifico}</h3>
-                <hr style="border-top: 2px solid #1a472a; opacity: 0.2;">
-            """, unsafe_allow_html=True)
-            st.markdown(f"<div style='background-color: rgba(255, 255, 255, 0.8); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9rem;'>{plant.descricao}</div>", unsafe_allow_html=True)
-            
-            col_mec, col_dose = st.columns(2)
-            with col_mec:
-                st.markdown("#### ⚙️ Mecanismo")
-                st.write(plant.mecanismo)
-            with col_dose:
-                st.markdown("#### 💊 Dosagem Usual")
-                st.success(f"**{plant.dose}**")
+            <div class="detail-card">
+                <h1 style="text-align: left; font-size: 3rem !important; color: #1a472a; margin-bottom: 0;">{plant.nome}</h1>
+                <h3 style="font-style: italic; color: #666 !important; margin-top: -5px; margin-bottom: 20px;">{plant.nome_cientifico}</h3>
+                
+                <div style='background-color: rgba(26, 71, 42, 0.05); border-left: 4px solid #1a472a; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 1rem; color: #2c3e50;'>
+                    {plant.descricao}
+                </div>
+                
+                <h3 style="color: #2d5a3f; margin-bottom: 10px;">⚙️ Mecanismo</h3>
+                <p style="color: #2c3e50; line-height: 1.6;">{plant.mecanismo}</p>
+                
+                <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9;">
+                    <h3 style="margin: 0 0 10px 0; color: #1b5e20;">💊 Dosagem Usual</h3>
+                    <p style="margin: 0; font-weight: bold; color: #1b5e20; font-size: 1.1rem;">{plant.dose}</p>
+                </div>
 
-            st.markdown("---")
-            st.markdown("<h3 style='color: #8B0000 !important;'>⚠️ Perfil de Segurança</h3>", unsafe_allow_html=True)
-            s1, s2, s3 = st.columns(3)
-            with s1:
-                st.markdown("**Efeitos Adversos**")
-                st.caption(plant.adversos)
-            with s2:
-                st.markdown("**Contraindicações**")
-                st.caption(plant.contraindicacoes)
-            with s3:
-                st.markdown("**Interações**")
-                st.caption(plant.interacoes)
-        st.markdown("</div>", unsafe_allow_html=True)
+                <hr style="margin: 30px 0; border-top: 1px solid #ddd;">
+                
+                <h3 style='color: #8B0000 !important; margin-bottom: 20px;'>⚠️ Perfil de Segurança</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <strong>Efeitos Adversos:</strong>
+                        <p style="font-size: 0.95rem; color: #444;">{plant.adversos}</p>
+                    </div>
+                    <div>
+                        <strong>Contraindicações:</strong>
+                        <p style="font-size: 0.95rem; color: #b71c1c;">{plant.contraindicacoes}</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <strong>Interações:</strong>
+                    <p style="font-size: 0.95rem; color: #444; font-style: italic;">{plant.interacoes}</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
